@@ -189,7 +189,12 @@ details summary { cursor: pointer; color: var(--muted); font-size: 14px; margin-
 .entry .sw { width: 12px; height: 12px; border-radius: 50%; flex: none; }
 .entry .nm { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
 .qty { display: flex; align-items: center; gap: 2px; }
-.qty .num { min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
+.qty .num {
+  width: 56px; height: 30px; margin: 0 2px; padding: 0 4px; text-align: center; font: inherit; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--text); background: rgba(2, 6, 23, 0.55);
+  border: 1px solid var(--panel-border); border-radius: 8px; -moz-appearance: textfield; appearance: textfield;
+}
+.qty .num::-webkit-outer-spin-button, .qty .num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .step, .del {
   width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--panel-border);
   background: rgba(255, 255, 255, 0.07); color: var(--text); font: inherit; font-size: 16px; line-height: 1; cursor: pointer;

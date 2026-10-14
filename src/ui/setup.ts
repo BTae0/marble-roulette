@@ -147,9 +147,30 @@ export function initSetup(onStart: (v: SetupValues) => void): { values(): SetupV
         nm.textContent = e.name;
         const qty = document.createElement('span');
         qty.className = 'qty';
-        const num = document.createElement('span');
+        const num = document.createElement('input');
+        num.type = 'number';
         num.className = 'num';
-        num.textContent = String(e.count);
+        num.min = '1';
+        num.max = String(MAX_MARBLES);
+        num.inputMode = 'numeric';
+        num.value = String(e.count);
+        num.setAttribute('aria-label', `${e.name} 개수`);
+        num.addEventListener('focus', () => num.select());
+        num.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter') {
+            ev.preventDefault();
+            num.blur();
+          }
+        });
+        num.addEventListener('change', () => {
+          const v = Math.floor(Number(num.value));
+          if (!num.value.trim() || !Number.isFinite(v) || v < 1) {
+            num.value = String(e.count);
+            return;
+          }
+          const next = setCount(entries, i, v);
+          update(next, next[i].count < v ? [`구슬은 최대 ${MAX_MARBLES}개까지만 사용합니다.`] : []);
+        });
         qty.append(
           button('−', 'step', `${e.name} 개수 줄이기`, () => update(setCount(entries, i, e.count - 1))),
           num,
