@@ -24,14 +24,6 @@ export interface SetupValues {
 
 const STORAGE_KEY = 'marble-roulette:v1';
 const MODES: Mode[] = ['first', 'last', 'multiple'];
-const DEFAULT_ENTRIES: Entry[] = [
-  { name: '수박', count: 2 },
-  { name: '키위', count: 2 },
-  { name: '귤', count: 2 },
-  { name: '딸기', count: 1 },
-  { name: '포도', count: 1 },
-  { name: '복숭아', count: 1 },
-];
 
 interface Saved {
   entries?: unknown;
@@ -76,7 +68,7 @@ function restoreEntries(saved: Saved | null): Entry[] {
     const grouped = groupNames(parseNames(saved.text).names);
     if (grouped.length > 0) return grouped;
   }
-  return DEFAULT_ENTRIES.map((e) => ({ ...e }));
+  return [];
 }
 
 function $<T extends HTMLElement>(id: string): T {
