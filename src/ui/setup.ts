@@ -1,5 +1,5 @@
 import { MAPS, getMap } from '../game/maps';
-import { MAX_MARBLES, parseNames } from '../game/names';
+import { MAX_MARBLES } from '../game/names';
 import { colorsFor } from '../game/marble';
 import { clampK, type Mode } from '../game/rules';
 import {
@@ -7,7 +7,6 @@ import {
   addNumbered,
   expand,
   removeEntry,
-  sanitize,
   setCount,
   shuffleEntries,
   total,
@@ -26,8 +25,6 @@ const STORAGE_KEY = 'marble-roulette:v1';
 const MODES: Mode[] = ['first', 'last', 'multiple'];
 
 interface Saved {
-  entries?: unknown;
-  text?: unknown;
   mapId?: unknown;
   mode?: unknown;
   k?: unknown;
@@ -43,32 +40,12 @@ function load(): Saved | null {
   }
 }
 
-function save(data: { entries: Entry[]; mapId: string; mode: Mode; k: number }): void {
+function save(data: { mapId: string; mode: Mode; k: number }): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch {
     /* 저장소를 쓸 수 없어도 동작에는 영향이 없다 */
   }
-}
-
-function groupNames(names: string[]): Entry[] {
-  const out: Entry[] = [];
-  for (const name of names) {
-    const found = out.find((e) => e.name === name);
-    if (found) found.count++;
-    else out.push({ name, count: 1 });
-  }
-  return out;
-}
-
-function restoreEntries(saved: Saved | null): Entry[] {
-  const fromEntries = sanitize(saved?.entries);
-  if (fromEntries && fromEntries.length > 0) return fromEntries;
-  if (typeof saved?.text === 'string') {
-    const grouped = groupNames(parseNames(saved.text).names);
-    if (grouped.length > 0) return grouped;
-  }
-  return [];
 }
 
 function $<T extends HTMLElement>(id: string): T {
@@ -100,7 +77,7 @@ export function initSetup(onStart: (v: SetupValues) => void): { values(): SetupV
   const startEl = $<HTMLButtonElement>('start');
 
   const saved = load();
-  let entries = restoreEntries(saved);
+  let entries: Entry[] = [];
   let warnings: string[] = [];
   let mapId = typeof saved?.mapId === 'string' && MAPS.some((m) => m.id === saved.mapId) ? saved.mapId : MAPS[0].id;
   let mode: Mode = MODES.includes(saved?.mode as Mode) ? (saved!.mode as Mode) : 'first';
@@ -206,7 +183,7 @@ export function initSetup(onStart: (v: SetupValues) => void): { values(): SetupV
     });
     kWrap.classList.toggle('hidden', mode !== 'multiple');
     if (count > 0) kEl.max = String(count);
-    save({ entries, mapId, mode, k: Number(kEl.value) || 1 });
+    save({ mapId, mode, k: Number(kEl.value) || 1 });
   }
 
   function submitInput(): void {
