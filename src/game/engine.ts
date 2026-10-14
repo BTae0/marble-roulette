@@ -1,6 +1,6 @@
 import { World, Vec2, Circle, Box, type Body } from 'planck';
 import type { MapDef } from './maps';
-import { mulberry32 } from './names';
+import { mulberry32, shuffle } from './names';
 import {
   MARBLE_R,
   STUCK_SEC,
@@ -45,7 +45,12 @@ export class Simulation {
     this.rand = mulberry32(seed);
     this.world = new World({ gravity: new Vec2(0, GRAVITY) });
     this.buildMap();
-    this.buildMarbles(names);
+    const colors = colorsFor(names);
+    const order = shuffle(names.map((_, i) => i), this.rand);
+    this.buildMarbles(
+      order.map((i) => names[i]),
+      order.map((i) => colors[i]),
+    );
     if (names.length === 0) this.done = true;
   }
 
@@ -85,8 +90,7 @@ export class Simulation {
     }
   }
 
-  private buildMarbles(names: string[]): void {
-    const colors = colorsFor(names);
+  private buildMarbles(names: string[], colors: string[]): void {
     const pos = spawnPositions(names.length, this.map.spawn, this.rand);
     names.forEach((name, id) => {
       const body = this.world.createDynamicBody({

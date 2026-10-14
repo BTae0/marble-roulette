@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Simulation } from './engine';
 import { MAPS } from './maps';
+import { colorsFor } from './marble';
 
 const HARD_CAP_SEC = 900;
 const MIN_RACE_SEC = 45;
@@ -85,4 +86,32 @@ describe('Simulation 안정성', () => {
       }
     }
   }, 600000);
+});
+
+describe('시작 순서 섞기', () => {
+  const grouped = ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'];
+
+  it('시작 위치 순서가 입력 순서 그대로가 아니다(시드별로 섞인다)', () => {
+    const orders = [1, 2, 3, 4, 5].map((seed) =>
+      new Simulation(MAPS[0], grouped, seed).marbles.map((m) => m.name).join(''),
+    );
+    expect(orders.some((o) => o !== grouped.join(''))).toBe(true);
+    expect(new Set(orders).size).toBeGreaterThan(1);
+  });
+
+  it('같은 시드는 같은 섞임이고, 구슬 구성은 보존된다', () => {
+    const a = new Simulation(MAPS[0], grouped, 9).marbles.map((m) => m.name);
+    const b = new Simulation(MAPS[0], grouped, 9).marbles.map((m) => m.name);
+    expect(a).toEqual(b);
+    expect([...a].sort()).toEqual([...grouped].sort());
+  });
+
+  it('섞여도 색은 입력 순서 기준(참가자 칩 색)과 같다', () => {
+    const sim = new Simulation(MAPS[0], grouped, 3);
+    const colorOf = (name: string) => sim.marbles.find((m) => m.name === name)!.color;
+    expect(colorsFor(grouped)[0]).toBe(colorOf('a'));
+    expect(colorsFor(grouped)[4]).toBe(colorOf('b'));
+    expect(colorsFor(grouped)[8]).toBe(colorOf('c'));
+    sim.marbles.forEach((m, i) => expect(m.id).toBe(i));
+  });
 });
